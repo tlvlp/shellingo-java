@@ -1,31 +1,23 @@
 package com.tlvlp.shellingo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Shellingo implements Runnable{
 
-    private Boolean passed;
-    private Map<String, String> questions;
-    private String question;
-    private String solution;
+    private Set<VocabularyItem> vocabularyItems;
     private Random rand;
     private Scanner scanner;
 
     public Shellingo() {
-
         try {
-            passed = true;
-            questions = new Parser().getQuestions();
+            vocabularyItems = new Parser().getVocabualryItems();
             rand = new Random();
             scanner = new Scanner(System.in);
-            question = "";
-            solution = "";
         } catch (IOException | NoQuestionsFoundException e) {
-            System.out.println("Error in reading the question file(s): " + e.getMessage());
+            System.err.println("Error in reading the question file(s): " + e.getMessage());
             System.exit(1);
         }
 
@@ -33,49 +25,79 @@ public class Shellingo implements Runnable{
 
     @Override
     public void run() {
-        System.out.printf("Welcome to shellingo :)%n(type 'q' to exit)%n");
+        System.out.printf("Welcome to shellingo :)%n" +
+                "(type 'q' to exit)%n");
+
+        boolean passed = true;
+        VocabularyItem vocabItem = null;
+
         while (true) {
-            selectNewQuestionOnSuccess();
-            var answer = postQuestion(question);
-            checkForExitRequest(answer);
-            checkAnswer(solution, answer);
+            try {
+                if (passed) {
+                    vocabItem = selectNewQuestionOnSuccess();
+                    passed = false;
+                }
+                var answer = postQuestion(vocabItem);
+                checkForExitRequest(answer);
+                passed = checkAnswer(answer, vocabItem);
+            } catch (NoQuestionsFoundException e) {
+                System.err.println("Error: " + e.getMessage());
+                System.exit(1);
+            }
+
         }
     }
 
-    private void selectNewQuestionOnSuccess() {
-        if (passed) {
-            question = chooseRandomQueston();
-            solution = questions.get(question);
-            passed = false;
+    private VocabularyItem selectNewQuestionOnSuccess() throws NoQuestionsFoundException {
+        var randInt = rand.nextInt(vocabularyItems.size());
+        int index = 0;
+        for (VocabularyItem vi : vocabularyItems) {
+            if (index == randInt) {
+                return vi;
+            }
+            index++;
         }
-    }
-
-    private String chooseRandomQueston() {
-        var randInt = rand.nextInt(questions.size());
-        var keys = new ArrayList<>(questions.keySet());
-        return keys.get(randInt);
+        throw new NoQuestionsFoundException("There was a problem with retrieving the next question");
     }
 
     private void checkForExitRequest(String answer) {
         if (answer.equals("q")) {
+            printPracticeSummary();
             System.out.println("Bye!");
             System.exit(0);
         }
     }
 
-    private String postQuestion(String question) {
-        System.out.printf("%s: ", question);
+    private String postQuestion(VocabularyItem vocabItem) {
+        System.out.printf("%s: ", vocabItem.getQuestion());
         return scanner.nextLine();
     }
 
-    private void checkAnswer(String solution, String answer) {
+    private boolean checkAnswer(String answer, VocabularyItem vocabItem) {
+        var solution = vocabItem.getSolution();
         var result = solution.toLowerCase()
                 .equals(answer.toLowerCase().strip());
         if (result) {
             System.out.println("Correct!");
-            passed = true;
+            vocabularyItems.add(vocabItem.incrementSuccessCount());
+            return true;
         } else {
-            System.out.println("Not correct!");
+            System.err.println("Not correct!");
+            vocabularyItems.add(vocabItem.incrementErrorCount());
+            return false;
         }
+    }
+
+    private void printPracticeSummary() {
+        System.out.printf("====================%n" +
+                "Practice summary:%n");
+        var successSummary = 0;
+        var errorSummary = 0;
+        for (VocabularyItem item : vocabularyItems) {
+            successSummary += item.getSuccessCount();
+            errorSummary += item.getErrorCount();
+        }
+        System.out.println("Number of correct answers: " + successSummary);
+        System.out.println("Number of mistakes: " + errorSummary);
     }
 }
