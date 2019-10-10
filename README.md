@@ -23,7 +23,7 @@ java -jar shellingo-1.0.0.jar
 > This allows organizing questions into separate text files and folders and moving them in and out of the **questions** 
 > folder to change the practice materials. 
 > Make sure not to mix languages, or if you do indicate the language in each question :)
-> All the questions will be mixed and randomly presented. Each word will be repeated until a correct solution is given.
+> All the questions will be presented in a random order. Each word will be repeated until a correct solution is given.
 
 - Create a text file and add one word/question per row and provide the expected answer, 
 separated with a pipe **|** character.
