@@ -75,17 +75,27 @@ public class Shellingo implements Runnable{
 
     private boolean checkAnswer(String answer, VocabularyItem vocabItem) {
         var solution = vocabItem.getSolution();
-        var result = solution.toLowerCase()
-                .equals(answer.toLowerCase().strip());
-        if (result) {
+        var isAnswerCorrect = cleanString(solution).equals(cleanString(answer));
+        if (isAnswerCorrect) {
             System.out.println("Correct!");
-            vocabularyItems.add(vocabItem.incrementSuccessCount());
+            vocabularyItems.add(vocabItem.withIncrementedSuccessCount());
             return true;
         } else {
             System.err.println("Not correct!");
-            vocabularyItems.add(vocabItem.incrementErrorCount());
+            vocabularyItems.add(vocabItem.withIncrementedErrorCount());
             return false;
         }
+    }
+
+    private String cleanString(String string) {
+        return string
+                .strip()
+                .toLowerCase()
+                .replaceAll(" +", " ")
+                .replace("?", "")
+                .replace(".", "")
+                .replace(",", "")
+                .replace("!", "");
     }
 
     private void printPracticeSummary() {

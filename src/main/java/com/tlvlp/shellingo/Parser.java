@@ -21,8 +21,8 @@ public class Parser {
                             .map(line -> line.split("\\|"))
                             .forEach(lineArray -> {
                                 if (lineArray.length == 2) {
-                                    var question = lineArray[0].strip().replaceAll(" +", " ");
-                                    var answer = lineArray[1].strip().replaceAll(" +", " ");
+                                    var question = lineArray[0];
+                                    var answer = lineArray[1];
                                     vocabItems.add(new VocabularyItem()
                                             .setId(LocalDateTime.now().toString())
                                             .setQuestion(question)
