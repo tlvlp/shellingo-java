@@ -17,6 +17,7 @@ public class Parser {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if(attrs.isRegularFile()) {
                     Files.lines(file)
+                            .filter(line -> !line.isBlank())
                             .filter(line -> !line.startsWith("#"))
                             .map(line -> line.split("\\|"))
                             .forEach(lineArray -> {
