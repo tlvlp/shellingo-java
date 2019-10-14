@@ -11,12 +11,12 @@ public class VocabularyItem {
     private int successCount;
     private int errorCount;
 
-    public VocabularyItem incrementErrorCount() {
+    public VocabularyItem withIncrementedErrorCount() {
         errorCount++;
         return this;
     }
 
-    public VocabularyItem incrementSuccessCount() {
+    public VocabularyItem withIncrementedSuccessCount() {
         successCount++;
         return this;
     }

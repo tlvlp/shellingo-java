@@ -28,7 +28,7 @@ java -jar shellingo-1.0.0.jar
 - Create a text file and add one word/question per row and provide the expected answer, 
 separated with a pipe **|** character.
 - You can also add comments with the hash **#** character. These lines will be ignored during the practice.
-- Both questions and answers will be formatted to remove leading, trailing and duplicate white spaces
+- Both questions and answers will be formatted to remove leading, trailing and duplicate white spaces and punctuation
 - Letter casing will be ignored during the practice
 
 ```text
