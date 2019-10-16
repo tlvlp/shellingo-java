@@ -26,12 +26,14 @@ public class Shellingo implements Runnable{
 
     @Override
     public void run() {
-        System.out.printf("Welcome to shellingo :)%n" +
-                "(type 'q' to exit)%n");
-
         boolean passed = true;
         var remainingQuestions = new HashSet<>(allVocabularyItems);
         VocabularyItem currentQuestion = null;
+
+        System.out.printf(
+                "Welcome to shellingo :)%n" +
+                        "You have loaded %d number of questions. " +
+                        "(send 'q' to quit)%n", remainingQuestions.size());
 
         while (true) {
             try {
@@ -39,6 +41,9 @@ public class Shellingo implements Runnable{
                     remainingQuestions.remove(currentQuestion);
                     if (remainingQuestions.isEmpty()) {
                         remainingQuestions.addAll(allVocabularyItems);
+                        System.out.println("Congrats, You have completed a cycle!");
+                        printSummary();
+                        System.out.println("Keep practicing or send 'q' to quit");
                     }
                     currentQuestion = selectNewQuestionOnSuccess(remainingQuestions);
                     passed = false;
@@ -68,7 +73,8 @@ public class Shellingo implements Runnable{
 
     private void checkForExitRequest(String answer) {
         if (answer.equals("q")) {
-            printPracticeSummary();
+            System.out.println("Thanks for practicing :) here is your summary: ");
+            printSummary();
             System.out.println("Bye!");
             System.exit(0);
         }
@@ -83,11 +89,11 @@ public class Shellingo implements Runnable{
         var solution = vocabItem.getSolution();
         var isAnswerCorrect = cleanString(solution).equals(cleanString(answer));
         if (isAnswerCorrect) {
-            System.out.println("Correct!");
+            System.out.println("Correct :)");
             allVocabularyItems.add(vocabItem.withIncrementedSuccessCount());
             return true;
         } else {
-            System.err.println("Not correct!");
+            System.err.println("Try again:");
             allVocabularyItems.add(vocabItem.withIncrementedErrorCount());
             return false;
         }
@@ -104,9 +110,8 @@ public class Shellingo implements Runnable{
                 .replace("!", "");
     }
 
-    private void printPracticeSummary() {
-        System.out.printf("====================%n" +
-                "Practice summary:%n");
+    private void printSummary() {
+        System.out.println("====================");
         var successSummary = 0;
         var errorSummary = 0;
         for (VocabularyItem item : allVocabularyItems) {
@@ -115,5 +120,6 @@ public class Shellingo implements Runnable{
         }
         System.out.println("Number of correct answers: " + successSummary);
         System.out.println("Number of mistakes: " + errorSummary);
+        System.out.println("====================");
     }
 }
