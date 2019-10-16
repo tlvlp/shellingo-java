@@ -32,7 +32,7 @@ public class Shellingo implements Runnable{
 
         System.out.printf(
                 "Welcome to shellingo :)%n" +
-                        "You have loaded %d number of questions. " +
+                        "You have loaded %d questions. " +
                         "(send 'q' to quit)%n", remainingQuestions.size());
 
         while (true) {
