@@ -1,19 +1,20 @@
 package com.tlvlp.shellingo;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
 public class Shellingo implements Runnable{
 
-    private Set<VocabularyItem> vocabularyItems;
+    private Set<VocabularyItem> allVocabularyItems;
     private Random rand;
     private Scanner scanner;
 
     public Shellingo() {
         try {
-            vocabularyItems = new Parser().getVocabualryItems();
+            allVocabularyItems = new Parser().getVocabualryItems();
             rand = new Random();
             scanner = new Scanner(System.in);
         } catch (IOException | NoQuestionsFoundException e) {
@@ -29,17 +30,22 @@ public class Shellingo implements Runnable{
                 "(type 'q' to exit)%n");
 
         boolean passed = true;
-        VocabularyItem vocabItem = null;
+        var remainingQuestions = new HashSet<>(allVocabularyItems);
+        VocabularyItem currentQuestion = null;
 
         while (true) {
             try {
                 if (passed) {
-                    vocabItem = selectNewQuestionOnSuccess();
+                    remainingQuestions.remove(currentQuestion);
+                    if (remainingQuestions.isEmpty()) {
+                        remainingQuestions.addAll(allVocabularyItems);
+                    }
+                    currentQuestion = selectNewQuestionOnSuccess(remainingQuestions);
                     passed = false;
                 }
-                var answer = postQuestion(vocabItem);
+                var answer = postQuestion(currentQuestion);
                 checkForExitRequest(answer);
-                passed = checkAnswer(answer, vocabItem);
+                passed = checkAnswer(answer, currentQuestion);
             } catch (NoQuestionsFoundException e) {
                 System.err.println("Error: " + e.getMessage());
                 System.exit(1);
@@ -48,10 +54,10 @@ public class Shellingo implements Runnable{
         }
     }
 
-    private VocabularyItem selectNewQuestionOnSuccess() throws NoQuestionsFoundException {
-        var randInt = rand.nextInt(vocabularyItems.size());
+    private VocabularyItem selectNewQuestionOnSuccess(HashSet<VocabularyItem> remainingQuestions) throws NoQuestionsFoundException {
+        var randInt = rand.nextInt(remainingQuestions.size());
         int index = 0;
-        for (VocabularyItem vi : vocabularyItems) {
+        for (VocabularyItem vi : remainingQuestions) {
             if (index == randInt) {
                 return vi;
             }
@@ -78,11 +84,11 @@ public class Shellingo implements Runnable{
         var isAnswerCorrect = cleanString(solution).equals(cleanString(answer));
         if (isAnswerCorrect) {
             System.out.println("Correct!");
-            vocabularyItems.add(vocabItem.withIncrementedSuccessCount());
+            allVocabularyItems.add(vocabItem.withIncrementedSuccessCount());
             return true;
         } else {
             System.err.println("Not correct!");
-            vocabularyItems.add(vocabItem.withIncrementedErrorCount());
+            allVocabularyItems.add(vocabItem.withIncrementedErrorCount());
             return false;
         }
     }
@@ -103,7 +109,7 @@ public class Shellingo implements Runnable{
                 "Practice summary:%n");
         var successSummary = 0;
         var errorSummary = 0;
-        for (VocabularyItem item : vocabularyItems) {
+        for (VocabularyItem item : allVocabularyItems) {
             successSummary += item.getSuccessCount();
             errorSummary += item.getErrorCount();
         }

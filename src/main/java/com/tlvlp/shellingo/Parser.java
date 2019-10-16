@@ -6,10 +6,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 public class Parser {
 
-    public HashSet<VocabularyItem> getVocabualryItems() throws IOException, NoQuestionsFoundException {
+    public Set<VocabularyItem> getVocabualryItems() throws IOException, NoQuestionsFoundException {
         var vocabItems = new HashSet<VocabularyItem>();
         var parsingErrors = new ArrayList<String>();
         Files.walkFileTree(Paths.get("./questions"), new SimpleFileVisitor<>() {

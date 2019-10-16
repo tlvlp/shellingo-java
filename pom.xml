@@ -6,7 +6,7 @@
 
     <groupId>com.tlvlp</groupId>
     <artifactId>shellingo</artifactId>
-    <version>1.0.0</version>
+    <version>1.2.0</version>
     <name>shellingo</name>
 
     <properties>
