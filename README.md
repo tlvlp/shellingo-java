@@ -1,6 +1,5 @@
 # Shellingo
 
-## Description
 A simple language-agnostic command line tool for course specific vocabulary practice.
 (Without the constant harassment of the Duolingo owl :D)
 
@@ -11,12 +10,13 @@ A simple language-agnostic command line tool for course specific vocabulary prac
 mvn clean install
 ```
 3. Copy the jar from the **target** folder to where you want to use it.
-4. Create a subfolder named **questions** next to the jar.
-5. Add vocabularies (see the How to section below)
+4. Create a subfolder named **questions** next to the jar. This is the default path to store questions in
+5. Add vocabularies (see the 'How to' section below)
 6. Run the jar with:
 ```bash
 java -jar shellingo-1.0.0.jar
 ```
+> Note: The app also takes a single argument that overrides the default path
 
 ## How to add vocabularies
 > Shellingo will read all files in the **questions** directory and all its subdirectories next to the jar file.

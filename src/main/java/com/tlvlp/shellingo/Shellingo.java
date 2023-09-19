@@ -1,31 +1,31 @@
 package com.tlvlp.shellingo;
 
-import java.io.IOException;
+import lombok.val;
+
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
-public class Shellingo implements Runnable{
+public class Shellingo {
 
-    private Set<VocabularyItem> allVocabularyItems;
-    private Random rand;
-    private Scanner scanner;
+    private static final Random rand = new Random();
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final Set<VocabularyItem> allVocabularyItems = new HashSet<>();
+    private static final String DEFAULT_PATH = "./questions";
 
-    public Shellingo() {
-        try {
-            allVocabularyItems = new Parser().getVocabualryItems();
-            rand = new Random();
-            scanner = new Scanner(System.in);
-        } catch (IOException | NoQuestionsFoundException e) {
-            System.err.println("Error in reading the question file(s): " + e.getMessage());
-            System.exit(1);
-        }
-
+    public static void main(String[] args) {
+        start(args);
     }
 
-    @Override
-    public void run() {
+    public static void start(String[] args) {
+        if (args.length > 1) {
+            throw new RuntimeException("Too many arguments.");
+        }
+        val questionsParent = args.length != 0 ? args[0] : DEFAULT_PATH;
+
+        allVocabularyItems.addAll(Parser.getVocabularyItems(questionsParent));
+
         boolean passed = true;
         var remainingQuestions = new HashSet<>(allVocabularyItems);
         VocabularyItem currentQuestion = null;
@@ -33,7 +33,7 @@ public class Shellingo implements Runnable{
         System.out.printf(
                 "Welcome to shellingo :)%n" +
                         "You have loaded %d questions. " +
-                        "(send 'q' to quit)%n", remainingQuestions.size());
+                        "(type 'q' to quit)%n", remainingQuestions.size());
 
         while (true) {
             try {
@@ -51,7 +51,7 @@ public class Shellingo implements Runnable{
                 var answer = postQuestion(currentQuestion);
                 checkForExitRequest(answer);
                 passed = checkAnswer(answer, currentQuestion);
-            } catch (NoQuestionsFoundException e) {
+            } catch (Exception e) {
                 System.err.println("Error: " + e.getMessage());
                 System.exit(1);
             }
@@ -59,7 +59,7 @@ public class Shellingo implements Runnable{
         }
     }
 
-    private VocabularyItem selectNewQuestionOnSuccess(HashSet<VocabularyItem> remainingQuestions) throws NoQuestionsFoundException {
+    private static VocabularyItem selectNewQuestionOnSuccess(HashSet<VocabularyItem> remainingQuestions) {
         var randInt = rand.nextInt(remainingQuestions.size());
         int index = 0;
         for (VocabularyItem vi : remainingQuestions) {
@@ -68,10 +68,10 @@ public class Shellingo implements Runnable{
             }
             index++;
         }
-        throw new NoQuestionsFoundException("There was a problem with retrieving the next question");
+        throw new RuntimeException("There was a problem with retrieving the next question");
     }
 
-    private void checkForExitRequest(String answer) {
+    private static void checkForExitRequest(String answer) {
         if (answer.equals("q")) {
             System.out.println("Thanks for practicing :) here is your summary: ");
             printSummary();
@@ -80,12 +80,12 @@ public class Shellingo implements Runnable{
         }
     }
 
-    private String postQuestion(VocabularyItem vocabItem) {
+    private static String postQuestion(VocabularyItem vocabItem) {
         System.out.printf("%s: ", vocabItem.getQuestion());
         return scanner.nextLine();
     }
 
-    private boolean checkAnswer(String answer, VocabularyItem vocabItem) {
+    private static boolean checkAnswer(String answer, VocabularyItem vocabItem) {
         var solution = vocabItem.getSolution();
         var isAnswerCorrect = cleanString(solution).equals(cleanString(answer));
         if (isAnswerCorrect) {
@@ -99,7 +99,7 @@ public class Shellingo implements Runnable{
         }
     }
 
-    private String cleanString(String string) {
+    private static String cleanString(String string) {
         return string
                 .strip()
                 .toLowerCase()
@@ -110,7 +110,7 @@ public class Shellingo implements Runnable{
                 .replace("!", "");
     }
 
-    private void printSummary() {
+    private static void printSummary() {
         System.out.println("====================");
         var successSummary = 0;
         var errorSummary = 0;
