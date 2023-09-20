@@ -43,7 +43,7 @@ public class Shellingo {
                         remainingQuestions.addAll(allVocabularyItems);
                         System.out.println("Congrats, You have completed a cycle!");
                         printSummary();
-                        System.out.println("Keep practicing or send 'q' to quit");
+                        System.out.println("Keep practicing or type 'q' to quit");
                     }
                     currentQuestion = selectNewQuestionOnSuccess(remainingQuestions);
                     passed = false;
@@ -90,11 +90,11 @@ public class Shellingo {
         var isAnswerCorrect = prepareForComparison(solution).equals(prepareForComparison(answer));
         if (isAnswerCorrect) {
             System.out.println("Correct :)");
-            allVocabularyItems.add(vocabItem.withIncrementedSuccessCount());
+            vocabItem.withIncrementedSuccessCount();
             return true;
         } else {
             System.err.println("Try again:");
-            allVocabularyItems.add(vocabItem.withIncrementedErrorCount());
+            vocabItem.withIncrementedErrorCount();
             return false;
         }
     }
@@ -109,14 +109,21 @@ public class Shellingo {
 
     private static void printSummary() {
         System.out.println("====================");
+        var successRound = 0;
+        var errorRound = 0;
         var successSummary = 0;
         var errorSummary = 0;
         for (VocabularyItem item : allVocabularyItems) {
-            successSummary += item.getSuccessCount();
-            errorSummary += item.getErrorCount();
+            successRound += item.getSuccessCountRound();
+            errorRound += item.getErrorCountRound();
+
+            successSummary += item.getSuccessCountSum();
+            errorSummary += item.getErrorCountSum();
+
+            item.resetRound();
         }
-        System.out.println("Number of correct answers: " + successSummary);
-        System.out.println("Number of mistakes: " + errorSummary);
+        System.out.printf("Number of correct answers: %s [%s]%n", successRound, successSummary);
+        System.out.printf("Number of mistakes: %s [%s]%n", errorRound, errorSummary);
         System.out.println("====================");
     }
 }

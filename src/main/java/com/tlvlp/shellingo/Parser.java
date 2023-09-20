@@ -32,8 +32,10 @@ public class Parser {
                                                 .setId(LocalDateTime.now().toString())
                                                 .setQuestion(question)
                                                 .setSolution(answer)
-                                                .setSuccessCount(0)
-                                                .setErrorCount(0)
+                                                .setSuccessCountRound(0)
+                                                .setErrorCountRound(0)
+                                                .setSuccessCountSum(0)
+                                                .setErrorCountSum(0)
                                                 .setLocation(file.toString())
                                         );
                                     } else {
