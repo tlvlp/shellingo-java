@@ -6,17 +6,20 @@ A simple language-agnostic command line tool for course specific vocabulary prac
 ## Building and setup
 1. Clone the project
 2. Use Maven to build the executable jar
-```bash
+```shell
 mvn clean install
 ```
 3. Copy the jar from the **target** folder to where you want to use it.
 4. Create a subfolder named **questions** next to the jar. This is the default path to store questions in
 5. Add vocabularies (see the 'How to' section below)
 6. Run the jar with:
-```bash
+```shell
 java -jar shellingo-1.0.0.jar
 ```
 > Note: The app also takes a single argument that overrides the default path
+ ```shell
+java -jar shellingo-1.0.0.jar mypath/my_parent_folder
+```
 
 ## How to add vocabularies
 > Shellingo will read all files in the **questions** directory and all its subdirectories next to the jar file.
