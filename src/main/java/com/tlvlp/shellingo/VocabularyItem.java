@@ -21,16 +21,14 @@ public class VocabularyItem {
     private int successCountSum;
     private int errorCountSum;
 
-    public VocabularyItem withIncrementedErrorCount() {
+    public void incrementedErrorCount() {
         errorCountRound++;
         errorCountSum++;
-        return this;
     }
 
-    public VocabularyItem withIncrementedSuccessCount() {
+    public void incrementedSuccessCount() {
         successCountRound++;
         successCountSum++;
-        return this;
     }
 
     public void resetRound() {
