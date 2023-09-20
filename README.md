@@ -16,9 +16,11 @@ mvn clean install
 ```shell
 java -jar shellingo-1.0.0.jar
 ```
-> Note: The app also takes a single argument that overrides the default path
+> Note: The app also takes a single argument that overrides the default path. 
+> This could be either a parent folder or an exact file.
  ```shell
 java -jar shellingo-1.0.0.jar mypath/my_parent_folder
+java -jar shellingo-1.0.0.jar mypath/my_parent_folder/selected_file.txt
 ```
 
 ## How to add vocabularies
