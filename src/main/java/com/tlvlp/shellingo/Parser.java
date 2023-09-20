@@ -26,8 +26,8 @@ public class Parser {
                                 .map(line -> line.split("\\|"))
                                 .forEach(lineArray -> {
                                     if (lineArray.length == 2) {
-                                        var question = fixWhitespaces(lineArray[0]);
-                                        var answer = fixWhitespaces(lineArray[1]);
+                                        var question = removeExtraWhitespaces(lineArray[0]);
+                                        var answer = removeExtraWhitespaces(lineArray[1]);
                                         vocabItems.add(new VocabularyItem()
                                                 .setId(LocalDateTime.now().toString())
                                                 .setQuestion(question)
@@ -57,7 +57,7 @@ public class Parser {
         return vocabItems;
     }
 
-    private static String fixWhitespaces(String input) {
+    private static String removeExtraWhitespaces(String input) {
         return input.trim().replaceAll("\\s{2,}", " ");
     }
 

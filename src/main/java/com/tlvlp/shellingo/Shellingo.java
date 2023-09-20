@@ -87,7 +87,7 @@ public class Shellingo {
 
     private static boolean checkAnswer(String answer, VocabularyItem vocabItem) {
         var solution = vocabItem.getSolution();
-        var isAnswerCorrect = cleanString(solution).equals(cleanString(answer));
+        var isAnswerCorrect = prepareForComparison(solution).equals(prepareForComparison(answer));
         if (isAnswerCorrect) {
             System.out.println("Correct :)");
             allVocabularyItems.add(vocabItem.withIncrementedSuccessCount());
@@ -99,15 +99,12 @@ public class Shellingo {
         }
     }
 
-    private static String cleanString(String string) {
+    private static String prepareForComparison(String string) {
         return string
                 .strip()
                 .toLowerCase()
-                .replaceAll(" +", " ")
-                .replace("?", "")
-                .replace(".", "")
-                .replace(",", "")
-                .replace("!", "");
+                .replaceAll("\\s{2,}", " ")
+                .replaceAll("[?,!.]", "");
     }
 
     private static void printSummary() {
