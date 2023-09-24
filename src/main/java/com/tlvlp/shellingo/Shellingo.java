@@ -3,90 +3,122 @@ package com.tlvlp.shellingo;
 import lombok.val;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Shellingo {
 
-    private static final Random rand = new Random();
-    private static final Scanner scanner = new Scanner(System.in);
-    private static final List<VocabularyItem> allVocabularyItems = new ArrayList<>();
     private static final String DEFAULT_PATH = "./questions";
+    private static final Random rand = new Random();
 
     public static void main(String[] args) {
         start(args);
     }
 
     public static void start(String[] args) {
+
+        try (Scanner scanner = new Scanner(System.in)) {
+            val questionsParentPath = parseProgramArgs(args);
+            List<Question> allQuestions = new ArrayList<>(Parser.getQuestions(questionsParentPath));
+            List<Integer> remainingQuestionRefs = getQuestionReferences(allQuestions);
+            Question currentQuestion = null;
+
+            System.out.printf("""
+                            Welcome to shellingo :)
+                            You have loaded %d questions.
+                            """,
+                    allQuestions.size());
+            printHelpMessage();
+
+            while (true) {
+                try {
+                    if (currentQuestion == null) {
+                        if (remainingQuestionRefs.isEmpty()) {
+                            System.out.println("Congrats, You have completed a round!");
+                            printSummary(allQuestions);
+                            remainingQuestionRefs = getQuestionReferences(allQuestions);
+                            allQuestions.forEach(Question::resetRound);
+                            printHelpMessage();
+                        }
+                        currentQuestion = pickNewQuestionFrom(remainingQuestionRefs, allQuestions);
+                    }
+
+                    var answer = postQuestion(currentQuestion, scanner);
+
+                    switch (answer) {
+                        case "-q" -> {
+                            printSummary(allQuestions);
+                            System.out.println("Quitting shellingo, have a nice day! :)");
+                            System.exit(0);
+                        }
+                        case "-s" -> printSummary(allQuestions);
+                        case "-c" -> printClue(currentQuestion);
+                        case "-r" -> {
+                            System.out.println("Resetting round!");
+                            allQuestions.forEach(Question::resetRound);
+                            remainingQuestionRefs = getQuestionReferences(allQuestions);
+                            currentQuestion = null;
+                        }
+                        case "-h5" -> {
+                            System.out.println("Resetting round to the hardest 5 questions (with most overall error count)");
+                            allQuestions = getHardestQuestions(5, allQuestions);
+                            remainingQuestionRefs = getQuestionReferences(allQuestions);
+                            currentQuestion = null;
+                        }
+                        default -> {
+                            // Evaluate the input as a response attempt
+                            val passed = prepareForComparison(currentQuestion.getSolution()).equals(prepareForComparison(answer));
+                            if (passed) {
+                                System.out.println("Correct!");
+                                currentQuestion.incrementCorrectCount();
+                                currentQuestion = null;
+                            } else {
+                                System.out.println("Try again:");
+                                currentQuestion.incrementErrorCount();
+                            }
+                        }
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Error: " + e.getMessage());
+                    System.exit(1);
+                }
+            }
+        }
+    }
+
+    private static String parseProgramArgs(String[] args) {
         if (args.length > 1) {
             throw new RuntimeException("Too many arguments.");
         }
-        val questionsParentPath = args.length != 0 ? args[0] : DEFAULT_PATH;
-
-        allVocabularyItems.addAll(Parser.getVocabularyItems(questionsParentPath));
-
-        var remainingQuestions = new ArrayList<>(allVocabularyItems);
-        VocabularyItem currentQuestion = null;
-
-        System.out.printf(
-                "Welcome to shellingo :)%n" +
-                        "You have loaded %d questions. " +
-                        "(type 'q' to quit)%n", remainingQuestions.size());
-
-        while (true) {
-            try {
-                if(currentQuestion == null) {
-                    if (remainingQuestions.isEmpty()) {
-                        remainingQuestions.addAll(allVocabularyItems);
-                        System.out.println("Congrats, You have completed a cycle!");
-                        printSummary();
-                        System.out.println("Keep practicing or type 'q' to quit");
-                    }
-                    currentQuestion = pickNewQuestionFrom(remainingQuestions);
-                }
-
-                var answer = postQuestion(currentQuestion);
-
-                checkForExitRequest(answer);
-                var passed = validateAnswer(answer, currentQuestion);
-                if (passed) {
-                    System.out.println("Correct :)");
-                    currentQuestion.incrementedSuccessCount();
-                    currentQuestion = null;
-                } else {
-                    System.err.println("Try again:");
-                    currentQuestion.incrementedErrorCount();
-                }
-
-            } catch (Exception e) {
-                System.err.println("Error: " + e.getMessage());
-                System.exit(1);
-            }
-
-        }
+        return args.length != 0 ? args[0] : DEFAULT_PATH;
     }
 
-    private static VocabularyItem pickNewQuestionFrom(List<VocabularyItem> remainingQuestions) {
-        var index = rand.nextInt(remainingQuestions.size());
-        var selected = remainingQuestions.get(index);
-        remainingQuestions.remove(index);
-        return selected;
+    private static List<Integer> getQuestionReferences(List<Question> allQuestions) {
+        return IntStream.range(0, allQuestions.size()).boxed().collect(Collectors.toList());
     }
 
-    private static void checkForExitRequest(String answer) {
-        if (answer.equals("q")) {
-            System.out.println("Thanks for practicing :) here is your summary: ");
-            printSummary();
-            System.out.println("Bye!");
-            System.exit(0);
-        }
+    private static void printHelpMessage() {
+        System.out.println(
+                        """
+                        Type '-q' to quit.
+                             '-s' to print a summary.
+                             '-c' to print a clue for the answer.
+                             '-r' to reset round.
+                             '-h5' to practice the hardest 5 question (with most wrong answers)
+                        """);
     }
 
-    private static String postQuestion(VocabularyItem vocabItem) {
-        System.out.printf("%s: ", vocabItem.getQuestion());
+    private static Question pickNewQuestionFrom(List<Integer> remainingQuestionRefs, List<Question> allQuestions) {
+        var index = rand.nextInt(remainingQuestionRefs.size());
+        var selectedRef = remainingQuestionRefs.get(index);
+        remainingQuestionRefs.remove(index);
+        return allQuestions.get(selectedRef);
+    }
+
+    private static String postQuestion(Question question, Scanner scanner) {
+        System.out.printf("%s: ", question.getQuestion());
         return scanner.nextLine();
-    }
-
-    private static boolean validateAnswer(String answer, VocabularyItem vocabItem) {
-        return prepareForComparison(vocabItem.getSolution()).equals(prepareForComparison(answer));
     }
 
     private static String prepareForComparison(String string) {
@@ -94,26 +126,62 @@ public class Shellingo {
                 .strip()
                 .toLowerCase()
                 .replaceAll("\\s{2,}", " ")
-                .replaceAll("[?,!.]", "");
+                .replaceAll("[?,!.:;]", "");
     }
 
-    private static void printSummary() {
+    private static void printSummary(List<Question> allQuestions) {
         System.out.println("====================");
-        var successRound = 0;
-        var errorRound = 0;
-        var successSummary = 0;
-        var errorSummary = 0;
-        for (VocabularyItem item : allVocabularyItems) {
-            successRound += item.getSuccessCountRound();
-            errorRound += item.getErrorCountRound();
+        System.out.println("Questions (hardest first):");
 
-            successSummary += item.getSuccessCountSum();
-            errorSummary += item.getErrorCountSum();
+        val summary = allQuestions.stream()
+                .sorted(hardestFirstComparator())
+                .peek(question ->
+                        System.out.printf("Wrong: %s [%s] Correct: %s [%s] Question: %s%n",
+                                question.getErrorCountRound(),
+                                question.getErrorCountSum(),
+                                question.getCorrectCountRound(),
+                                question.getCorrectCountSum(),
+                                question.getQuestion()
+                        )
+                )
+                .reduce(new Question()
+                                .setCorrectCountRound(0)
+                                .setCorrectCountSum(0)
+                                .setErrorCountRound(0)
+                                .setErrorCountSum(0),
+                        Question::mergeCounts
+                );
 
-            item.resetRound();
-        }
-        System.out.printf("Number of correct answers: %s [%s]%n", successRound, successSummary);
-        System.out.printf("Number of mistakes: %s [%s]%n", errorRound, errorSummary);
         System.out.println("====================");
+        System.out.printf("Number of correct answers: %s [%s]%n", summary.getCorrectCountRound(), summary.getCorrectCountSum());
+        System.out.printf("Number of wrong answers: %s [%s]%n", summary.getErrorCountRound(), summary.getErrorCountSum());
+        System.out.println("====================");
+    }
+
+    private static Comparator<Question> hardestFirstComparator() {
+        return Comparator.comparingInt(Question::getErrorCountSum).reversed();
+    }
+
+
+    private static void printClue(Question currentQuestion) {
+        val solution = currentQuestion.getSolution();
+        val masked = IntStream.range(0, solution.length())
+                .mapToObj(index -> {
+                    val c = solution.charAt(index);
+                    if (index % 2 == 0) {
+                        return c;
+                    }
+                    return c == ' ' ? ' ' : '*';
+                })
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append);
+
+        System.out.println("Clue: " + masked);
+    }
+
+    private static List<Question> getHardestQuestions(int maxCount, List<Question> allQuestions) {
+        return allQuestions.stream()
+                .sorted(hardestFirstComparator())
+                .limit(maxCount)
+                .collect(Collectors.toList());
     }
 }

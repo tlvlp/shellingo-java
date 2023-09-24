@@ -1,6 +1,5 @@
 package com.tlvlp.shellingo;
 
-import org.assertj.core.util.Files;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -15,7 +14,7 @@ public class ParserTest {
         // given we have the test files in the resources folder
 
         // when
-        Set<VocabularyItem> items = Parser.getVocabularyItems("src/test/resources/questions");
+        Set<Question> items = Parser.getQuestions("src/test/resources/questions");
 
         // then
         assertThat(items)

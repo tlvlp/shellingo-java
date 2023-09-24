@@ -11,7 +11,7 @@ mvn clean install
 ```
 3. Copy the jar from the **target** folder to where you want to use it.
 4. Create a subfolder named **questions** next to the jar. This is the default path to store questions in
-5. Add vocabularies (see the 'How to' section below)
+5. Add questions (see the 'How to' section below)
 6. Run the jar with:
 ```shell
 java -jar shellingo-1.0.0.jar
@@ -23,7 +23,7 @@ java -jar shellingo-1.0.0.jar mypath/my_parent_folder
 java -jar shellingo-1.0.0.jar mypath/my_parent_folder/selected_file.txt
 ```
 
-## How to add vocabularies
+## How to add vocabularies/questions
 > Shellingo will read all files in the **questions** directory and all its subdirectories next to the jar file.
 > This allows organizing questions into separate text files and folders and moving them in and out of the **questions** 
 > folder to change the practice materials. 

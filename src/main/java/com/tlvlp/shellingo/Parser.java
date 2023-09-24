@@ -13,10 +13,10 @@ import java.util.Set;
 public class Parser {
 
     @SneakyThrows
-    public static Set<VocabularyItem> getVocabularyItems(String questionsParent) {
-        var vocabItems = new HashSet<VocabularyItem>();
+    public static Set<Question> getQuestions(String questionsPath) {
+        var questions = new HashSet<Question>();
         var parsingErrors = new ArrayList<String>();
-        Files.walkFileTree(Paths.get(questionsParent), new SimpleFileVisitor<>() {
+        Files.walkFileTree(Paths.get(questionsPath), new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (attrs.isRegularFile()) {
@@ -28,13 +28,13 @@ public class Parser {
                                     if (lineArray.length == 2) {
                                         var question = removeExtraWhitespaces(lineArray[0]);
                                         var answer = removeExtraWhitespaces(lineArray[1]);
-                                        vocabItems.add(new VocabularyItem()
+                                        questions.add(new Question()
                                                 .setId(LocalDateTime.now().toString())
                                                 .setQuestion(question)
                                                 .setSolution(answer)
-                                                .setSuccessCountRound(0)
+                                                .setCorrectCountRound(0)
                                                 .setErrorCountRound(0)
-                                                .setSuccessCountSum(0)
+                                                .setCorrectCountSum(0)
                                                 .setErrorCountSum(0)
                                                 .setLocation(file.toString())
                                         );
@@ -48,7 +48,7 @@ public class Parser {
             }
         });
 
-        if (vocabItems.isEmpty()) {
+        if (questions.isEmpty()) {
             throw new RuntimeException("No questions found in the questions directory");
         }
 
@@ -56,7 +56,7 @@ public class Parser {
             System.err.println("Errors found during parsing the questions. The following lines will be ignored:");
             parsingErrors.forEach(System.err::println);
         }
-        return vocabItems;
+        return questions;
     }
 
     private static String removeExtraWhitespaces(String input) {
