@@ -46,13 +46,9 @@ public class Shellingo {
                     var answer = postQuestion(currentQuestion, scanner);
 
                     switch (answer) {
-                        case "-q" -> {
-                            printSummary(allQuestions);
-                            System.out.println("Quitting shellingo, have a nice day! :)");
-                            System.exit(0);
-                        }
-                        case "-s" -> printSummary(allQuestions);
                         case "-c" -> printClue(currentQuestion);
+                        case "-solution" -> System.out.println("The solution is: " + currentQuestion.getSolution());
+                        case "-s" -> printSummary(allQuestions);
                         case "-r" -> {
                             System.out.println("Resetting round!");
                             allQuestions.forEach(Question::resetRound);
@@ -64,6 +60,11 @@ public class Shellingo {
                             allQuestions = getHardestQuestions(5, allQuestions);
                             remainingQuestionRefs = getQuestionReferences(allQuestions);
                             currentQuestion = null;
+                        }
+                        case "-q" -> {
+                            printSummary(allQuestions);
+                            System.out.println("Quitting shellingo, have a nice day! :)");
+                            System.exit(0);
                         }
                         default -> {
                             // Evaluate the input as a response attempt
@@ -101,11 +102,13 @@ public class Shellingo {
     private static void printHelpMessage() {
         System.out.println(
                         """
-                        Type '-q' to quit.
-                             '-s' to print a summary.
+                        Type
                              '-c' to print a clue for the answer.
+                             '-solution' to print the answer.
+                             '-s' to print a summary.
                              '-r' to reset round.
                              '-h5' to practice the hardest 5 question (with most wrong answers)
+                             '-q' to quit.
                         """);
     }
 
