@@ -50,8 +50,8 @@ public class Shellingo {
 
                     switch (answer) {
                         case "/clue", "/c" -> revealCluesForPenalty(state);
-                        case "/solution" -> revealSolutionsForPenalty(state);
-                        case "/sum" -> printSummary(state);
+                        case "/show", "/s" -> revealSolutionsForPenalty(state);
+                        case "/status" -> printSummary(state);
                         case "/reset" -> {
                             System.out.println("Resetting round!");
                             resetLoop(state);
@@ -125,19 +125,21 @@ public class Shellingo {
     }
 
     private static void printHelpMessage() {
-        System.out.println(
-                """
-                        Type
-                             '/clue' or '/c' to print clues for the possible answers.
-                             '/solution' to print the answer.
-                             '/sum' to print a summary.
-                             '/reset' to reset round.
-                             '/h3' to practice the hardest 3 question (with most wrong answers)
-                             '/h5' to practice the hardest 5 question (with most wrong answers)
-                             '/h10' to practice the hardest 10 question (with most wrong answers)
-                             '/help' prints this help text.
-                             '/quit' or '/q' to quit.
-                        """);
+        System.out.printf("""
+                Type
+                     '/clue' or '/c' to print clues in exchange for %d error penalty.
+                     '/show' or '/s' to print the answer in exchange for %d error penalty.
+                     '/status' to print the current status.
+                     '/reset' to reset round.
+                     '/h3' to practice the hardest 3 question (with most wrong answers)
+                     '/h5' to practice the hardest 5 question (with most wrong answers)
+                     '/h10' to practice the hardest 10 question (with most wrong answers)
+                     '/help' prints this help text.
+                     '/quit' or '/q' to quit.
+                %n""",
+                CLUE_PENALTY,
+                REVEAL_PENALTY
+        );
     }
 
     private static void pickNewQuestionFrom(LoopState state) {
@@ -168,7 +170,7 @@ public class Shellingo {
                 .stream()
                 .sorted(hardestFirstComparator())
                 .peek(question ->
-                        System.out.printf("Wrong: %s [%s] Correct: %s [%s] Question: %s%n",
+                        System.out.printf("Error: %s [%s] Correct: %s [%s] Question: %s%n",
                                 question.getErrorCountRound(),
                                 question.getErrorCountSum(),
                                 question.getCorrectCountRound(),
@@ -186,7 +188,7 @@ public class Shellingo {
 
         System.out.println("====================");
         System.out.printf("Number of correct answers: %s [%s]%n", summary.getCorrectCountRound(), summary.getCorrectCountSum());
-        System.out.printf("Number of wrong answers: %s [%s]%n", summary.getErrorCountRound(), summary.getErrorCountSum());
+        System.out.printf("Number of errors: %s [%s]%n", summary.getErrorCountRound(), summary.getErrorCountSum());
         System.out.println("====================");
     }
 
