@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -12,9 +14,8 @@ import lombok.experimental.Accessors;
 public class Question {
 
     @EqualsAndHashCode.Include
-    private String id;
     private String question;
-    private String solution;
+    private Set<String> solutions;
     private String location;
     private int correctCountRound;
     private int errorCountRound;

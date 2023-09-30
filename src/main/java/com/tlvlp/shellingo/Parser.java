@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,19 +24,24 @@ public class Parser {
                                 .filter(line -> !line.startsWith("#"))
                                 .map(line -> line.split("\\|"))
                                 .forEach(lineArray -> {
+                                    // Create or update questions
                                     if (lineArray.length == 2) {
-                                        var question = removeExtraWhitespaces(lineArray[0]);
-                                        var answer = removeExtraWhitespaces(lineArray[1]);
-                                        questions.add(new Question()
-                                                .setId(LocalDateTime.now().toString())
-                                                .setQuestion(question)
-                                                .setSolution(answer)
-                                                .setCorrectCountRound(0)
-                                                .setErrorCountRound(0)
-                                                .setCorrectCountSum(0)
-                                                .setErrorCountSum(0)
-                                                .setLocation(file.toString())
-                                        );
+                                        var questionStr = removeExtraWhitespaces(lineArray[0]);
+                                        var solutionStr = removeExtraWhitespaces(lineArray[1]);
+                                        final var question = questions.stream()
+                                                .filter(q -> q.getQuestion().equals(questionStr))
+                                                .findAny()
+                                                .orElse(new Question()
+                                                        .setQuestion(questionStr)
+                                                        .setCorrectCountRound(0)
+                                                        .setErrorCountRound(0)
+                                                        .setCorrectCountSum(0)
+                                                        .setErrorCountSum(0)
+                                                        .setSolutions(new HashSet<>())
+                                                        .setLocation(file.toString())
+                                                );
+                                        question.getSolutions().add(solutionStr);
+                                        questions.add(question);
                                     } else {
                                         parsingErrors.add(String.format("File: %s   line: '%s'", file, lineArray[0]));
                                     }

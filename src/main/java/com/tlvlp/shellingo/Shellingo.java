@@ -47,7 +47,7 @@ public class Shellingo {
 
                     switch (answer) {
                         case "-c" -> printClue(currentQuestion);
-                        case "-solution" -> System.out.println("The solution is: " + currentQuestion.getSolution());
+                        case "-solution" -> System.out.println("The solution is: " + currentQuestion.getSolutions());
                         case "-s" -> printSummary(allQuestions);
                         case "-r" -> {
                             System.out.println("Resetting round!");
@@ -68,7 +68,7 @@ public class Shellingo {
                         }
                         default -> {
                             // Evaluate the input as a response attempt
-                            val passed = prepareForComparison(currentQuestion.getSolution()).equals(prepareForComparison(answer));
+                            val passed = checkAnswer(answer, currentQuestion);
                             if (passed) {
                                 System.out.println("Correct!");
                                 currentQuestion.incrementCorrectCount();
@@ -88,6 +88,14 @@ public class Shellingo {
         }
     }
 
+    private static boolean checkAnswer(String answerRaw, Question question) {
+        val answer = prepareForComparison(answerRaw);
+        return question.getSolutions()
+                .stream()
+                .map(Shellingo::prepareForComparison)
+                .anyMatch(answer::equals);
+    }
+
     private static String parseProgramArgs(String[] args) {
         if (args.length > 1) {
             throw new RuntimeException("Too many arguments.");
@@ -101,7 +109,7 @@ public class Shellingo {
 
     private static void printHelpMessage() {
         System.out.println(
-                        """
+                """
                         Type
                              '-c' to print a clue for the answer.
                              '-solution' to print the answer.
@@ -166,19 +174,22 @@ public class Shellingo {
     }
 
 
-    private static void printClue(Question currentQuestion) {
-        val solution = currentQuestion.getSolution();
-        val masked = IntStream.range(0, solution.length())
-                .mapToObj(index -> {
-                    val c = solution.charAt(index);
-                    if (index % 2 == 0) {
-                        return c;
-                    }
-                    return c == ' ' ? ' ' : '*';
-                })
-                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append);
+    private static void printClue(Question question) {
+        val maskedSolutions = question.getSolutions()
+                .stream()
+                .map(solution -> IntStream.range(0, solution.length())
+                        .mapToObj(index -> {
+                            val c = solution.charAt(index);
+                            if (index % 2 == 0) {
+                                return c;
+                            }
+                            return c == ' ' ? ' ' : '*';
+                        })
+                        .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                )
+                .toList();
 
-        System.out.println("Clue: " + masked);
+        System.out.println("Clue: " + maskedSolutions);
     }
 
     private static List<Question> getHardestQuestions(int maxCount, List<Question> allQuestions) {

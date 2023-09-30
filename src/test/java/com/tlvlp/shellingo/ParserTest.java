@@ -18,10 +18,11 @@ public class ParserTest {
 
         // then
         assertThat(items)
-                .hasSize(3)
-                .anyMatch(item -> item.getQuestion().equals("simple question") && item.getSolution().equals("simple answer"))
-                .anyMatch(item -> item.getQuestion().equals("subfolder question") && item.getSolution().equals("subfolder answer"))
-                .anyMatch(item -> item.getQuestion().equals("malformed question") && item.getSolution().equals("malformed answer"))
+                .hasSize(5)
+                .anyMatch(item -> item.getQuestion().equals("simple question") && item.getSolutions().iterator().next().equals("simple answer"))
+                .anyMatch(item -> item.getQuestion().equals("subfolder question") && item.getSolutions().iterator().next().equals("subfolder answer"))
+                .anyMatch(item -> item.getQuestion().equals("malformed question") && item.getSolutions().iterator().next().equals("malformed answer"))
+                .anyMatch(item -> item.getQuestion().equals("multi question") && item.getSolutions().containsAll(Set.of("first answer", "second answer")))
         ;
     }
 
