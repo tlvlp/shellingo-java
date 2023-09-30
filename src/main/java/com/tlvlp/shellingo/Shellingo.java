@@ -45,23 +45,25 @@ public class Shellingo {
 
                     var answer = postQuestion(currentQuestion, scanner);
 
+                    if (!answer.startsWith("/")) continue;
+
                     switch (answer) {
-                        case "-c" -> printClue(currentQuestion);
-                        case "-solution" -> System.out.println("The solution is: " + currentQuestion.getSolutions());
-                        case "-s" -> printSummary(allQuestions);
-                        case "-r" -> {
+                        case "/c" -> printClue(currentQuestion);
+                        case "/solution" -> System.out.println("The solution is: " + currentQuestion.getSolutions());
+                        case "/s" -> printSummary(allQuestions);
+                        case "/r" -> {
                             System.out.println("Resetting round!");
                             allQuestions.forEach(Question::resetRound);
                             remainingQuestionRefs = getQuestionReferences(allQuestions);
                             currentQuestion = null;
                         }
-                        case "-h5" -> {
+                        case "/h5" -> {
                             System.out.println("Resetting round to the hardest 5 questions (with most overall error count)");
                             allQuestions = getHardestQuestions(5, allQuestions);
                             remainingQuestionRefs = getQuestionReferences(allQuestions);
                             currentQuestion = null;
                         }
-                        case "-q" -> {
+                        case "/q" -> {
                             printSummary(allQuestions);
                             System.out.println("Quitting shellingo, have a nice day! :)");
                             System.exit(0);
@@ -111,12 +113,12 @@ public class Shellingo {
         System.out.println(
                 """
                         Type
-                             '-c' to print a clue for the answer.
-                             '-solution' to print the answer.
-                             '-s' to print a summary.
-                             '-r' to reset round.
-                             '-h5' to practice the hardest 5 question (with most wrong answers)
-                             '-q' to quit.
+                             '/c' to print a clue for the answer.
+                             '/solution' to print the answer.
+                             '/s' to print a summary.
+                             '/r' to reset round.
+                             '/h5' to practice the hardest 5 question (with most wrong answers)
+                             '/q' to quit.
                         """);
     }
 
