@@ -48,9 +48,6 @@ public class Shellingo {
 
                     var answer = postQuestion(state.currentQuestion(), scanner);
 
-                    if (!answer.startsWith("/"))
-                        continue;
-
                     switch (answer) {
                         case "/clue", "/c" -> revealCluesForPenalty(state);
                         case "/solution" -> revealSolutionsForPenalty(state);
