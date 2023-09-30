@@ -10,6 +10,8 @@ public class Shellingo {
 
     private static final String DEFAULT_PATH = "./questions";
     private static final Random rand = new Random();
+    private static final int CLUE_PENALTY = 5;
+    private static final int REVEAL_PENALTY = 10;
 
     public static void main(String[] args) {
         start(args);
@@ -50,33 +52,22 @@ public class Shellingo {
                         continue;
 
                     switch (answer) {
-                        case "/c" -> printClues(state.currentQuestion());
-                        case "/solution" -> System.out.println("Solution(s): " + state.currentQuestion().getSolutions());
-                        case "/s" -> printSummary(state);
-                        case "/r" -> {
+                        case "/clue", "/c" -> revealCluesForPenalty(state);
+                        case "/solution" -> revealSolutionsForPenalty(state);
+                        case "/sum" -> printSummary(state);
+                        case "/reset" -> {
                             System.out.println("Resetting round!");
                             resetLoop(state);
                         }
                         case "/h3" -> resetToHardest(3, state);
                         case "/h5" -> resetToHardest(5, state);
                         case "/h10" -> resetToHardest(10, state);
-                        case "/q" -> {
+                        case "/quit", "/q" -> {
                             printSummary(state);
                             System.out.println("Quitting shellingo, have a nice day! :)");
                             System.exit(0);
                         }
-                        default -> {
-                            // Evaluate the input as a response attempt
-                            val passed = checkAnswer(answer, state.currentQuestion());
-                            if (passed) {
-                                System.out.println("Correct!");
-                                state.currentQuestion().incrementCorrectCount();
-                                state.currentQuestion(null);
-                            } else {
-                                System.out.println("Try again:");
-                                state.currentQuestion().incrementErrorCount();
-                            }
-                        }
+                        default -> handleAttempt(answer, state);
                     }
 
                 } catch (Exception e) {
@@ -84,6 +75,18 @@ public class Shellingo {
                     System.exit(1);
                 }
             }
+        }
+    }
+
+    private static void handleAttempt(String answer, LoopState state) {
+        val passed = checkAnswer(answer, state.currentQuestion());
+        if (passed) {
+            System.out.println("Correct!");
+            state.currentQuestion().incrementCorrectCountBy(1);
+            state.currentQuestion(null);
+        } else {
+            System.out.println("Try again:");
+            state.currentQuestion().incrementErrorCountBy(1);
         }
     }
 
@@ -127,14 +130,14 @@ public class Shellingo {
         System.out.println(
                 """
                         Type
-                             '/c' to print clues for the possible answers.
+                             '/clue' or '/c' to print clues for the possible answers.
                              '/solution' to print the answer.
-                             '/s' to print a summary.
-                             '/r' to reset round.
+                             '/sum' to print a summary.
+                             '/reset' to reset round.
                              '/h3' to practice the hardest 3 question (with most wrong answers)
                              '/h5' to practice the hardest 5 question (with most wrong answers)
                              '/h10' to practice the hardest 10 question (with most wrong answers)
-                             '/q' to quit.
+                             '/quit' or '/q' to quit.
                         """);
     }
 
@@ -193,8 +196,14 @@ public class Shellingo {
     }
 
 
-    private static void printClues(Question question) {
-        val maskedSolutions = question.getSolutions()
+    private static void revealSolutionsForPenalty(LoopState state) {
+        state.currentQuestion().incrementErrorCountBy(REVEAL_PENALTY);
+        System.out.println("Solution(s): " + state.currentQuestion().getSolutions());
+    }
+
+    private static void revealCluesForPenalty(LoopState state) {
+        state.currentQuestion().incrementErrorCountBy(CLUE_PENALTY);
+        val maskedSolutions = state.currentQuestion().getSolutions()
                 .stream()
                 .map(solution -> IntStream.range(0, solution.length())
                         .mapToObj(index -> {

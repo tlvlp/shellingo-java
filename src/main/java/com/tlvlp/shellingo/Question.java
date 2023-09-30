@@ -22,14 +22,14 @@ public class Question {
     private int correctCountSum;
     private int errorCountSum;
 
-    public void incrementErrorCount() {
-        errorCountRound++;
-        errorCountSum++;
+    public void incrementErrorCountBy(int increment) {
+        errorCountRound += increment;
+        errorCountSum += increment;
     }
 
-    public void incrementCorrectCount() {
-        correctCountRound++;
-        correctCountSum++;
+    public void incrementCorrectCountBy(int increment) {
+        correctCountRound += increment;
+        correctCountSum += increment;
     }
 
     public void resetRound() {
