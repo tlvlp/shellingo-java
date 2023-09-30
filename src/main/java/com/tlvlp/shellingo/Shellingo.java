@@ -18,66 +18,63 @@ public class Shellingo {
     public static void start(String[] args) {
 
         try (Scanner scanner = new Scanner(System.in)) {
-            val questionsParentPath = parseProgramArgs(args);
-            List<Question> allQuestions = new ArrayList<>(Parser.getQuestions(questionsParentPath));
-            List<Integer> remainingQuestionRefs = getQuestionReferences(allQuestions);
-            Question currentQuestion = null;
+            val questionsAtStart = new ArrayList<>(Parser.getQuestions(getParentPathFrom(args)));
+            LoopState state = new LoopState(
+                    questionsAtStart,
+                    getQuestionReferences(questionsAtStart),
+                    null
+            );
 
             System.out.printf("""
                             Welcome to shellingo :)
                             You have loaded %d questions.
                             """,
-                    allQuestions.size());
+                    state.allQuestions().size());
             printHelpMessage();
 
             while (true) {
                 try {
-                    if (currentQuestion == null) {
-                        if (remainingQuestionRefs.isEmpty()) {
+                    if (state.currentQuestion() == null) {
+                        if (state.remainingQuestionRefs().isEmpty()) {
                             System.out.println("Congrats, You have completed a round!");
-                            printSummary(allQuestions);
-                            remainingQuestionRefs = getQuestionReferences(allQuestions);
-                            allQuestions.forEach(Question::resetRound);
+                            printSummary(state);
+                            resetLoop(state);
                             printHelpMessage();
                         }
-                        currentQuestion = pickNewQuestionFrom(remainingQuestionRefs, allQuestions);
+                        pickNewQuestionFrom(state);
                     }
 
-                    var answer = postQuestion(currentQuestion, scanner);
+                    var answer = postQuestion(state.currentQuestion(), scanner);
 
-                    if (!answer.startsWith("/")) continue;
+                    if (!answer.startsWith("/"))
+                        continue;
 
                     switch (answer) {
-                        case "/c" -> printClue(currentQuestion);
-                        case "/solution" -> System.out.println("The solution is: " + currentQuestion.getSolutions());
-                        case "/s" -> printSummary(allQuestions);
+                        case "/c" -> printClues(state.currentQuestion());
+                        case "/solution" -> System.out.println("Solution(s): " + state.currentQuestion().getSolutions());
+                        case "/s" -> printSummary(state);
                         case "/r" -> {
                             System.out.println("Resetting round!");
-                            allQuestions.forEach(Question::resetRound);
-                            remainingQuestionRefs = getQuestionReferences(allQuestions);
-                            currentQuestion = null;
+                            resetLoop(state);
                         }
-                        case "/h5" -> {
-                            System.out.println("Resetting round to the hardest 5 questions (with most overall error count)");
-                            allQuestions = getHardestQuestions(5, allQuestions);
-                            remainingQuestionRefs = getQuestionReferences(allQuestions);
-                            currentQuestion = null;
-                        }
+                        case "/h3" -> resetToHardest(3, state);
+                        case "/h5" -> resetToHardest(5, state);
+                        case "/h10" -> resetToHardest(10, state);
                         case "/q" -> {
-                            printSummary(allQuestions);
+                            printSummary(state);
                             System.out.println("Quitting shellingo, have a nice day! :)");
                             System.exit(0);
                         }
                         default -> {
                             // Evaluate the input as a response attempt
-                            val passed = checkAnswer(answer, currentQuestion);
+                            val passed = checkAnswer(answer, state.currentQuestion());
                             if (passed) {
                                 System.out.println("Correct!");
-                                currentQuestion.incrementCorrectCount();
-                                currentQuestion = null;
+                                state.currentQuestion().incrementCorrectCount();
+                                state.currentQuestion(null);
                             } else {
                                 System.out.println("Try again:");
-                                currentQuestion.incrementErrorCount();
+                                state.currentQuestion().incrementErrorCount();
                             }
                         }
                     }
@@ -90,6 +87,23 @@ public class Shellingo {
         }
     }
 
+    private static void resetLoop(LoopState state) {
+        // Questions remain the same
+        resetLoopTo(state, state.allQuestions());
+    }
+
+    private static void resetLoopTo(LoopState state, List<Question> newQuestions) {
+        state.allQuestions(newQuestions);
+        state.allQuestions().forEach(Question::resetRound);
+        state.remainingQuestionRefs(getQuestionReferences(state.allQuestions()));
+        state.currentQuestion(null);
+    }
+
+    private static void resetToHardest(int numberOfQuestions, LoopState state) {
+        System.out.printf("Resetting round to the hardest %d questions (with most overall error count)%n", numberOfQuestions);
+        resetLoopTo(state, getHardestQuestions(numberOfQuestions, state));
+    }
+
     private static boolean checkAnswer(String answerRaw, Question question) {
         val answer = prepareForComparison(answerRaw);
         return question.getSolutions()
@@ -98,7 +112,7 @@ public class Shellingo {
                 .anyMatch(answer::equals);
     }
 
-    private static String parseProgramArgs(String[] args) {
+    private static String getParentPathFrom(String[] args) {
         if (args.length > 1) {
             throw new RuntimeException("Too many arguments.");
         }
@@ -113,20 +127,22 @@ public class Shellingo {
         System.out.println(
                 """
                         Type
-                             '/c' to print a clue for the answer.
+                             '/c' to print clues for the possible answers.
                              '/solution' to print the answer.
                              '/s' to print a summary.
                              '/r' to reset round.
+                             '/h3' to practice the hardest 3 question (with most wrong answers)
                              '/h5' to practice the hardest 5 question (with most wrong answers)
+                             '/h10' to practice the hardest 10 question (with most wrong answers)
                              '/q' to quit.
                         """);
     }
 
-    private static Question pickNewQuestionFrom(List<Integer> remainingQuestionRefs, List<Question> allQuestions) {
-        var index = rand.nextInt(remainingQuestionRefs.size());
-        var selectedRef = remainingQuestionRefs.get(index);
-        remainingQuestionRefs.remove(index);
-        return allQuestions.get(selectedRef);
+    private static void pickNewQuestionFrom(LoopState state) {
+        var index = rand.nextInt(state.remainingQuestionRefs().size());
+        var selectedRef = state.remainingQuestionRefs().get(index);
+        state.remainingQuestionRefs().remove(index);
+        state.currentQuestion(state.allQuestions().get(selectedRef));
     }
 
     private static String postQuestion(Question question, Scanner scanner) {
@@ -142,11 +158,12 @@ public class Shellingo {
                 .replaceAll("[?,!.:;]", "");
     }
 
-    private static void printSummary(List<Question> allQuestions) {
+    private static void printSummary(LoopState state) {
         System.out.println("====================");
         System.out.println("Questions (hardest first):");
 
-        val summary = allQuestions.stream()
+        val summary = state.allQuestions()
+                .stream()
                 .sorted(hardestFirstComparator())
                 .peek(question ->
                         System.out.printf("Wrong: %s [%s] Correct: %s [%s] Question: %s%n",
@@ -176,7 +193,7 @@ public class Shellingo {
     }
 
 
-    private static void printClue(Question question) {
+    private static void printClues(Question question) {
         val maskedSolutions = question.getSolutions()
                 .stream()
                 .map(solution -> IntStream.range(0, solution.length())
@@ -191,11 +208,12 @@ public class Shellingo {
                 )
                 .toList();
 
-        System.out.println("Clue: " + maskedSolutions);
+        System.out.println("Clue(s): " + maskedSolutions);
     }
 
-    private static List<Question> getHardestQuestions(int maxCount, List<Question> allQuestions) {
-        return allQuestions.stream()
+    private static List<Question> getHardestQuestions(int maxCount, LoopState state) {
+        return state.allQuestions()
+                .stream()
                 .sorted(hardestFirstComparator())
                 .limit(maxCount)
                 .collect(Collectors.toList());
