@@ -59,6 +59,7 @@ public class Shellingo {
                         case "/h3" -> resetToHardest(3, state);
                         case "/h5" -> resetToHardest(5, state);
                         case "/h10" -> resetToHardest(10, state);
+                        case "/help" -> printHelpMessage();
                         case "/quit", "/q" -> {
                             printSummary(state);
                             System.out.println("Quitting shellingo, have a nice day! :)");
@@ -134,6 +135,7 @@ public class Shellingo {
                              '/h3' to practice the hardest 3 question (with most wrong answers)
                              '/h5' to practice the hardest 5 question (with most wrong answers)
                              '/h10' to practice the hardest 10 question (with most wrong answers)
+                             '/help' prints this help text.
                              '/quit' or '/q' to quit.
                         """);
     }

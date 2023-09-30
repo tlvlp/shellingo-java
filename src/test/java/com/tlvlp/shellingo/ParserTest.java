@@ -18,7 +18,7 @@ public class ParserTest {
 
         // then
         assertThat(items)
-                .hasSize(5)
+                .hasSize(4)
                 .anyMatch(item -> item.getQuestion().equals("simple question") && item.getSolutions().iterator().next().equals("simple answer"))
                 .anyMatch(item -> item.getQuestion().equals("subfolder question") && item.getSolutions().iterator().next().equals("subfolder answer"))
                 .anyMatch(item -> item.getQuestion().equals("malformed question") && item.getSolutions().iterator().next().equals("malformed answer"))

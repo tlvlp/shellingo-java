@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Accessors(chain = true)
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Question {
 
     @EqualsAndHashCode.Include
