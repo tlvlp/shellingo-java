@@ -79,7 +79,7 @@ public class Shellingo {
     private static void handleAttempt(String answer, LoopState state) {
         val passed = checkAnswer(answer, state.currentQuestion());
         if (passed) {
-            System.out.println("Correct!");
+            System.out.println("✓");
             state.currentQuestion().incrementCorrectCountBy(1);
             state.currentQuestion(null);
         } else {
