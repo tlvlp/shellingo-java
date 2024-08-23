@@ -1,6 +1,6 @@
 # Shellingo
 
-> Continued in the [shellingo-rust](https://github.com/tlvlp/shellingo-rust) project.
+> Continued in the [shellingo rust](https://github.com/tlvlp/shellingo) project.
 
 A simple language-agnostic command line tool for course specific vocabulary practice.
 (Without the constant harassment of the Duolingo owl)
